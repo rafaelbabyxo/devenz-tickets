@@ -17,6 +17,8 @@ import { LoaderPinwheel } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useCallback, useRef, useState } from "react";
+import Image from "next/image";
+import Logo from "../../../public/logo.png";
 
 export function RegisterForm() {
   // Router serve para fazer redirect de páginas
@@ -24,6 +26,7 @@ export function RegisterForm() {
 
   // Referência para os inputs
   const emailInputRef = useRef<HTMLInputElement>(null);
+  const companyInputRef = useRef<HTMLInputElement>(null);
   const passwordInputRef = useRef<HTMLInputElement>(null);
   const password2InputRef = useRef<HTMLInputElement>(null);
 
@@ -49,11 +52,13 @@ export function RegisterForm() {
       // Verifica se os inputs existem na página
       if (
         emailInputRef.current &&
+        companyInputRef.current &&
         password2InputRef.current &&
         passwordInputRef.current
       ) {
         // Pega os valores preenchidos nos inputs
         const email = emailInputRef.current.value;
+        const company = companyInputRef.current.value;
         const pass1 = passwordInputRef.current.value;
         const pass2 = password2InputRef.current.value;
 
@@ -89,6 +94,7 @@ export function RegisterForm() {
           // que vai ser verificado no catch()
           const response = await axios.post<RegisterResponse>("/api/register", {
             email,
+            company,
             password: pass1,
             password2: pass2,
           });
@@ -124,45 +130,80 @@ export function RegisterForm() {
   );
 
   return (
-    <form onSubmit={(event) => handleRegisterSubmit(event)}>
-      <Card className="w-full max-w-sm m-auto mt-5">
-        <CardHeader>
-          <CardTitle className="text-2xl">Cadastro</CardTitle>
-          <CardDescription>
-            Insira seus dados para se cadastrar.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-4">
-          <div className="grid gap-2">
-            <Label htmlFor="email">Email</Label>
+    <div className="h-screen flex">
+      <div className="flex w-1/2 bg-gradient-to-r from-orange-600 to-zinc-800 justify-around items-center">
+        <div>
+          <h1 className="text-white font-bold text-4xl font-sans">Devenz Studio</h1>
+          <p className="text-white mt-1">Bem-vindo ao seu portal de cadastro</p>
+        </div>
+      </div>
+      <div className="flex w-1/2 justify-center items-center bg-zinc-800">
+        <form onSubmit={(event) => handleRegisterSubmit(event)} className="w-3/4">
+          <div className="mb-7 text-center">
+            <Image
+              className="w-250 h-300 mx-auto mb-20"
+              src={Logo}
+              alt="Devenz Studio Logo"
+              width={250}
+              height={250}
+            />
+            <h1 className="text-white font-bold text-2xl">Criar conta</h1>
+            <p className="text-sm font-normal text-white">
+              Insira os seus dados para criar uma conta.
+            </p>
+          </div>
+          <div className="flex items-center border-2 py-2 px-3 rounded-2xl mb-4 bg-zinc-800">
+            <Label className="text-white" htmlFor="email">
+              Email
+            </Label>
             <Input
               ref={emailInputRef}
               id="email"
               type="email"
-              placeholder="seu@email.com.br"
+              placeholder="seu@email.com"
+              className="pl-2 outline-none border-none w-full text-white bg-transparent"
               required
             />
           </div>
-          <div className="grid gap-2">
-            <Label htmlFor="password">Senha</Label>
+          <div className="flex items-center border-2 py-2 px-3 rounded-2xl mb-4 bg-zinc-800">
+            <Label className="text-white" htmlFor="company">
+              Empresa
+            </Label>
+            <Input
+              ref={companyInputRef}
+              id="company"
+              type="text"
+              placeholder="A sua empresa"
+              className="pl-2 outline-none border-none w-full text-white bg-transparent"
+              required
+            />
+          </div>
+          <div className="flex items-center border-2 py-2 px-3 rounded-2xl mb-4 bg-zinc-800">
+            <Label className="text-white" htmlFor="password">
+              Palavra-passe
+            </Label>
             <Input
               ref={passwordInputRef}
               id="password"
               type="password"
+              placeholder="Palavra-passe"
+              className="pl-2 outline-none border-none w-full text-white bg-transparent"
               required
             />
           </div>
-          <div className="grid gap-2">
-            <Label htmlFor="password2">Repita a senha</Label>
+          <div className="flex items-center border-2 py-2 px-3 rounded-2xl mb-4 bg-zinc-800">
+            <Label className="text-white" htmlFor="password2">
+              Repetir palavra-passe
+            </Label>
             <Input
               ref={password2InputRef}
               id="password2"
               type="password"
+              placeholder="Repita a palavra-passe"
+              className="pl-2 outline-none border-none w-full text-white bg-transparent"
               required
             />
           </div>
-        </CardContent>
-        <CardFooter className="grid">
           {formError && (
             <div className="text-amber-600 mb-4">
               <p className="text-sm font-semibold">Erro no formulário</p>
@@ -170,26 +211,31 @@ export function RegisterForm() {
             </div>
           )}
           {formSuccess && (
-            <div className="text-rose-600 mb-4">
+            <div className="text-green-500 mb-4">
               <p className="text-sm font-semibold">
                 Cadastro realizado, redirecionando para o app
               </p>
             </div>
           )}
-          <Button
-            className="w-full flex items-center gap-2"
-            disabled={formLoading}
+          <button
+            type="submit"
+            className="block w-full bg-orange-600 mt-4 py-2 rounded-2xl text-white font-semibold mb-2 flex items-center justify-center gap-2"
           >
             {formLoading && (
               <LoaderPinwheel className="w-[18px] animate-spin" />
             )}
             Cadastrar
-          </Button>
-          <div className="mt-5 underline text-center">
-            <Link href="/login">Ir para o login</Link>
+          </button>
+          <div className="text-sm text-center mt-4">
+            <Link
+              href="/login"
+              className="hover:text-blue-500 underline text-white"
+            >
+              Ir para o login
+            </Link>
           </div>
-        </CardFooter>
-      </Card>
-    </form>
+        </form>
+      </div>
+    </div>
   );
 }

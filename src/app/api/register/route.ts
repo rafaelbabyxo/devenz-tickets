@@ -9,6 +9,7 @@ import { cookies } from "next/headers";
 
 interface RegisterProps {
   email: string;
+  company: string;
   password: string;
   password2: string;
 }
@@ -24,9 +25,9 @@ export interface RegisterResponse {
 export async function POST(request: Request) {
   const body = (await request.json()) as RegisterProps;
 
-  const { email, password, password2 } = body;
+  const { email, company, password, password2 } = body;
 
-  if (!email || !password || !password2) {
+  if (!email || !company || !password || !password2) {
     return NextResponse.json(
       { error: "missing required fields" },
       { status: 400 }
@@ -53,6 +54,7 @@ export async function POST(request: Request) {
     const user = await prisma.user.create({
       data: {
         email,
+        company,
         password: hash,
       },
     });
@@ -90,5 +92,9 @@ export async function POST(request: Request) {
         );
       }
     }
+    return NextResponse.json(
+      { error: "internal server error" },
+      { status: 500 }
+    );
   }
 }

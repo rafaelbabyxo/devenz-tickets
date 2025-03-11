@@ -18,8 +18,10 @@ datasource db {
 model User {
   id       String     @id @default(cuid())
   email    String     @unique
+  company  String
   password String
   Sessions Sessions[]
+  Tickets  Ticket[]
 }
 
 model Sessions {
@@ -30,4 +32,17 @@ model Sessions {
   valid     Boolean
   createdAt DateTime @default(now())
   User      User     @relation(fields: [userId], references: [id])
+}
+
+model Ticket {
+  id         String   @id @default(cuid())
+  cc         String?  // Opcional
+  subject    String
+  message    String
+  files      String[] @default([]) // Lista obrigatória com valor padrão vazio
+  company    String
+  priority   String
+  department String
+  userId     String
+  User       User     @relation(fields: [userId], references: [id])
 }

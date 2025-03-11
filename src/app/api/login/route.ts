@@ -22,57 +22,72 @@ export const revalidate = 0;
  * Retorna 401 se não permitir a autenticação e 200 se permitir
  */
 export async function GET(request: NextRequest) {
-  const authCookie = cookies().get("auth-session");
+  try {
+    const authCookie = cookies().get("auth-session");
+    const sessionToken = authCookie?.value || "";
 
-  const sessionToken = authCookie?.value || "";
+    const prisma = PrismaGetInstance();
+    const session = await prisma.sessions.findFirst({
+      where: { token: sessionToken },
+    });
 
-  const prisma = PrismaGetInstance();
-  const session = await prisma.sessions.findFirst({
-    where: {
-      token: sessionToken,
-    },
-  });
+    if (!session || !session.valid || session.expiresAt < new Date()) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
 
-  if (!session || !session.valid || session.expiresAt < new Date()) {
-    return NextResponse.json({}, { status: 401 });
+    return NextResponse.json({ message: "Authorized" }, { status: 200 });
+  } catch (error) {
+    console.error("Error in authentication check:", error);
+    return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
   }
-
-  return NextResponse.json({}, { status: 200 });
 }
 
 /**
  * Realiza o login
  */
 export async function POST(request: Request) {
-  const body = (await request.json()) as LoginProps;
-
-  const { email, password } = body;
-
-  if (!email || !password) {
-    return NextResponse.json<LoginResponse>({ session: "" }, { status: 400 });
-  }
-
   try {
-    const prisma = PrismaGetInstance();
+    const body = (await request.json()) as LoginProps;
+    const { email, password } = body;
 
-    const user = await prisma.user.findUniqueOrThrow({
-      where: {
-        email,
-      },
-    });
-
-    const userPassword = user.password;
-    const passwordResult = bcrypt.compareSync(password, userPassword);
-
-    if (!passwordResult) {
-      return NextResponse.json<LoginResponse>({ session: "" }, { status: 400 });
+    if (!email || !password) {
+      return NextResponse.json<LoginResponse>(
+        { session: "" },
+        { status: 400, statusText: "Email and password are required." }
+      );
     }
 
-    const sessionToken = GenerateSession({
-      email,
-      passwordHash: userPassword,
+    const prisma = PrismaGetInstance();
+
+    // Encontrar o usuário pelo email
+    const user = await prisma.user.findUnique({
+      where: { email },
     });
 
+    if (!user) {
+      return NextResponse.json<LoginResponse>(
+        { session: "" },
+        { status: 400, statusText: "Invalid email or password." }
+      );
+    }
+
+    // Comparar senha com hash armazenado
+    const passwordResult = await bcrypt.compare(password, user.password);
+
+    if (!passwordResult) {
+      return NextResponse.json<LoginResponse>(
+        { session: "" },
+        { status: 400, statusText: "Invalid email or password." }
+      );
+    }
+
+    // Gerar token de sessão
+    const sessionToken = GenerateSession({
+      email,
+      passwordHash: user.password,
+    });
+
+    // Criar sessão no banco de dados
     await prisma.sessions.create({
       data: {
         userId: user.id,
@@ -82,16 +97,26 @@ export async function POST(request: Request) {
       },
     });
 
+    // Configurar cookie de autenticação
     cookies().set({
       name: "auth-session",
       value: sessionToken,
       httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // Secure em produção
+      sameSite: "strict",
       expires: addHours(new Date(), 24),
       path: "/",
     });
 
-    return NextResponse.json({ session: "dfasdfas" }, { status: 200 });
+    return NextResponse.json<LoginResponse>(
+      { session: sessionToken },
+      { status: 200 }
+    );
   } catch (error) {
-    return NextResponse.json<LoginResponse>({ session: "" }, { status: 400 });
+    console.error("Error in login process:", error);
+    return NextResponse.json<LoginResponse>(
+      { session: "" },
+      { status: 500, statusText: "Internal Server Error." }
+    );
   }
 }
