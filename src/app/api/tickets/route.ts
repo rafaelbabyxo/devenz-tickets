@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaGetInstance } from "../../../lib/prisma-pg";  // Altere a importação aqui
+import { PrismaGetInstance } from "../../../lib/prisma-pg";
 
 export async function GET(req: NextRequest) {
-  const prisma = PrismaGetInstance();  // Usar a instância do Prisma que você criou
+  const prisma = PrismaGetInstance();
 
   try {
     const authCookie = req.cookies.get("auth-session");
@@ -24,7 +24,11 @@ export async function GET(req: NextRequest) {
     const tickets = await prisma.ticket.findMany({
       where: { userId: session.userId },
       include: {
-        User: true,  // Incluir informações do usuário associado ao ticket
+        User: {
+          select: {
+            company: true, // Incluir apenas o campo 'company' do usuário
+          },
+        },
       },
     });
 

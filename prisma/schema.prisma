@@ -40,9 +40,9 @@ model Ticket {
   subject    String
   message    String
   files      String[] @default([]) // Lista obrigatória com valor padrão vazio
-  company    String
   priority   String
   department String
   userId     String
+  createdAt  DateTime @default(now()) // Adicionando campo de data de criação
   User       User     @relation(fields: [userId], references: [id])
 }

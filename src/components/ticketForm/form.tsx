@@ -1,16 +1,17 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import axios from "axios";
 
 const TicketForm = () => {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [inputValue, setInputValue] = useState("");
   const [formError, setFormError] = useState("");
   const [formSuccess, setFormSuccess] = useState(false);
   const [formLoading, setFormLoading] = useState(false);
-  const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [userId, setUserId] = useState("");  // Estado para armazenar o userId
 
   useEffect(() => {
@@ -57,10 +58,10 @@ const TicketForm = () => {
     formData.append("department", inputValue);
     formData.append("userId", userId); // Adicionando userId ao FormData
     if (cc) formData.append("cc", cc);
-    if (selectedFiles) {
-      for (let i = 0; i < selectedFiles.length; i++) {
-        formData.append("files", selectedFiles[i]);
-      }
+    if (selectedFiles.length > 0) {
+      selectedFiles.forEach((file) => {
+        formData.append("files", file);
+      });
     }
 
     console.log("FormData sendo enviado:", Array.from(formData.entries()));  // Log para verificar o conteúdo do FormData
@@ -75,6 +76,10 @@ const TicketForm = () => {
       setFormSuccess(true);
       setFormLoading(false);
       setFormError("");  // Limpar erros após sucesso
+
+      // Redirecionar para a página de detalhes do ticket
+      const ticketId = response.data.id;
+      router.push(`/tickets/${ticketId}`);
     } catch (error) {
       setFormError("Erro ao criar o ticket.");
       setFormLoading(false);
@@ -82,7 +87,9 @@ const TicketForm = () => {
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSelectedFiles(event.target.files);
+    if (event.target.files) {
+      setSelectedFiles((prevFiles) => [...prevFiles, ...Array.from(event.target.files || [])]);
+    }
   };
 
   return (
@@ -182,8 +189,8 @@ const TicketForm = () => {
                       ></path>
                     </svg>
                     <p className="lowercase text-sm text-gray-400 group-hover:text-purple-600 pt-1 tracking-wider">
-                      {selectedFiles
-                        ? Array.from(selectedFiles).map((file) => file.name).join(", ")
+                      {selectedFiles.length > 0
+                        ? selectedFiles.map((file) => file.name).join(", ")
                         : "Nenhum ficheiro selecionado"}
                     </p>
                   </div>

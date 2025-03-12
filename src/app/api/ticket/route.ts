@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Criar diretório local para armazenar arquivos, se não existir
-    const uploadDir = path.join(process.cwd(), "uploads");
+    const uploadDir = path.join(process.cwd(), "public/uploads");
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir);
     }
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
         const uint8Array = new Uint8Array(arrayBuffer);  // Converter para Uint8Array
         const filePath = path.join(uploadDir, file.name);
         fs.writeFileSync(filePath, uint8Array);  // Usar Uint8Array aqui
-        filePaths.push(filePath); // Salvar caminho do arquivo
+        filePaths.push(`/uploads/${file.name}`); // Salvar caminho do arquivo relativo ao diretório public
       } catch (fileError) {
         console.error("Erro ao salvar arquivo:", fileError);
         return NextResponse.json({ error: "Erro ao salvar arquivo." }, { status: 500 });
@@ -69,7 +69,6 @@ export async function POST(req: NextRequest) {
         subject,
         message,
         files: filePaths,
-        company,
         priority,
         department,
         userId,
