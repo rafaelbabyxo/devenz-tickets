@@ -12,6 +12,7 @@ interface RegisterProps {
   company: string;
   password: string;
   password2: string;
+  role?: "USER" | "ADMIN"; // Adicionado o campo role
 }
 
 export interface RegisterResponse {
@@ -25,7 +26,7 @@ export interface RegisterResponse {
 export async function POST(request: Request) {
   const body = (await request.json()) as RegisterProps;
 
-  const { email, company, password, password2 } = body;
+  const { email, company, password, password2, role } = body;
 
   if (!email || !company || !password || !password2) {
     return NextResponse.json(
@@ -56,6 +57,7 @@ export async function POST(request: Request) {
         email,
         company,
         password: hash,
+        role: role || "USER", // Define o valor padrão como USER caso role não seja fornecida
       },
     });
 

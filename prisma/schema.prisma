@@ -20,9 +20,15 @@ model User {
   email     String     @unique
   company   String
   password  String
+  role      Role       @default(USER) // Define a role com valor padrão como USER
   Sessions  Sessions[]
   Tickets   Ticket[]
   Responses Response[]
+}
+
+enum Role {
+  USER
+  ADMIN
 }
 
 model Sessions {
