@@ -9,13 +9,14 @@ import { getPriorityClass } from "@/lib/getPriorityClass";
 
 interface Ticket {
   id: string;
+  ticketNumber: string;
   subject: string;
   message: string;
   priority: string;
   department: string;
   status: string;
   createdAt: string;
-  updatedAt: string;
+  lastUpdate: string; // Atualizar para lastUpdate
   User?: {
     company: string;
   };
@@ -82,7 +83,7 @@ const TicketsPage = () => {
       </div>
       
       <div className="mb-4 mt-4">
-        <Link href="/ticket">
+        <Link href="/">
           <button className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded">
             Enviar Ticket +
           </button>
@@ -100,11 +101,11 @@ const TicketsPage = () => {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Número</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Assunto</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Departamento</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Empresa</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prioridade</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Enviado</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Última atualização</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Empresa</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -114,9 +115,10 @@ const TicketsPage = () => {
                 className="hover:bg-gray-50 cursor-pointer" 
                 onClick={() => navigateToTicket(ticket.id)}
               >
-                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#{ticket.id}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{ticket.ticketNumber}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ticket.subject}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ticket.department}</td>
+                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{ticket.User?.company}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                     ticket.status === 'Fechado' ? 'bg-gray-100 text-gray-800' : 'bg-orange-100 text-orange-800'
@@ -131,10 +133,15 @@ const TicketsPage = () => {
                   {new Date(ticket.createdAt).toLocaleDateString('pt-PT')}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {new Date(ticket.updatedAt).toLocaleDateString('pt-PT')} {new Date(ticket.updatedAt).toLocaleTimeString('pt-PT', {hour: '2-digit', minute:'2-digit'})}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                  {ticket.User?.company || "N/A"}
+                  {ticket.lastUpdate ? (
+                    <>
+                      {new Date(ticket.lastUpdate).toLocaleDateString('pt-PT')} {new Date(ticket.lastUpdate).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}
+                    </>
+                  ) : (
+                    <>
+                      {new Date(ticket.createdAt).toLocaleDateString('pt-PT')} {new Date(ticket.createdAt).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' })}
+                    </>
+                  )}
                 </td>
               </tr>
             ))}

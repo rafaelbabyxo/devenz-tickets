@@ -16,12 +16,13 @@ datasource db {
 }
 
 model User {
-  id       String     @id @default(cuid())
-  email    String     @unique
-  company  String
-  password String
-  Sessions Sessions[]
-  Tickets  Ticket[]
+  id        String     @id @default(cuid())
+  email     String     @unique
+  company   String
+  password  String
+  Sessions  Sessions[]
+  Tickets   Ticket[]
+  Responses Response[]
 }
 
 model Sessions {
@@ -35,14 +36,26 @@ model Sessions {
 }
 
 model Ticket {
+  id           String     @id @default(cuid())
+  ticketNumber String     @unique
+  cc           String? // Opcional
+  subject      String
+  message      String
+  files        String[]   @default([]) // Lista obrigatória com valor padrão vazio
+  priority     String
+  department   String
+  userId       String
+  createdAt    DateTime   @default(now()) // Adicionando campo de data de criação
+  User         User       @relation(fields: [userId], references: [id])
+  Responses    Response[] @relation
+}
+
+model Response {
   id         String   @id @default(cuid())
-  cc         String?  // Opcional
-  subject    String
   message    String
-  files      String[] @default([]) // Lista obrigatória com valor padrão vazio
-  priority   String
-  department String
+  lastUpdate DateTime @default(now())
+  ticketId   String
   userId     String
-  createdAt  DateTime @default(now()) // Adicionando campo de data de criação
+  Ticket     Ticket   @relation(fields: [ticketId], references: [id])
   User       User     @relation(fields: [userId], references: [id])
 }

@@ -29,10 +29,27 @@ export async function GET(req: NextRequest) {
             company: true, // Incluir apenas o campo 'company' do usuário
           },
         },
+        Responses: {
+          select: {
+            lastUpdate: true,
+          },
+        },
       },
     });
 
-    return NextResponse.json(tickets);
+    // Calcular o campo lastUpdate com base no campo lastUpdate das respostas
+    const ticketsWithLastUpdate = tickets.map(ticket => {
+      const lastResponse = ticket.Responses.reduce((latest, response) => {
+        return response.lastUpdate > latest.lastUpdate ? response : latest;
+      }, ticket.Responses[0]);
+
+      return {
+        ...ticket,
+        lastUpdate: lastResponse ? lastResponse.lastUpdate : ticket.createdAt,
+      };
+    });
+
+    return NextResponse.json(ticketsWithLastUpdate);
   } catch (error) {
     console.error("Erro ao buscar tickets:", error);
     return NextResponse.json({ error: "Erro ao buscar tickets." }, { status: 500 });

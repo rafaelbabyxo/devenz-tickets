@@ -19,6 +19,16 @@ export async function GET(
             company: true, // Incluir apenas os campos 'email' e 'company' do usuário
           },
         },
+        Responses: {
+          include: {
+            User: {
+              select: {
+                email: true,
+                company: true,
+              },
+            },
+          },
+        }, // Incluir as respostas do ticket
       },
     });
 
@@ -26,9 +36,59 @@ export async function GET(
       return NextResponse.json({ error: "Ticket não encontrado." }, { status: 404 });
     }
 
-    return NextResponse.json(ticket);
+    // Encontrar a última atualização do ticket
+    const lastResponse = ticket.Responses.reduce((latest, response) => {
+      return response.lastUpdate > latest.lastUpdate ? response : latest;
+    }, ticket.Responses[0]);
+
+    const updatedTicket = {
+      ...ticket,
+      updatedAt: lastResponse ? lastResponse.lastUpdate : ticket.createdAt,
+    };
+
+    return NextResponse.json(updatedTicket);
   } catch (error) {
     console.error("Erro ao buscar detalhes do ticket:", error);
     return NextResponse.json({ error: "Erro ao buscar detalhes do ticket." }, { status: 500 });
+  }
+}
+
+export async function POST(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  const prisma = PrismaGetInstance();
+  try {
+    const ticketId = params.id;
+    const { message, userId } = await req.json();
+
+    // Verificar se o ticket existe
+    const ticket = await prisma.ticket.findUnique({
+      where: { id: ticketId },
+    });
+
+    if (!ticket) {
+      return NextResponse.json({ error: "Ticket não encontrado." }, { status: 404 });
+    }
+
+    // Verificar se o userId está presente
+    if (!userId) {
+      return NextResponse.json({ error: "userId é obrigatório." }, { status: 400 });
+    }
+
+    // Adicionar a nova resposta ao ticket
+    const response = await prisma.response.create({
+      data: {
+        message,
+        ticketId,
+        userId,
+        lastUpdate: new Date(), // Atualizar o campo lastUpdate
+      },
+    });
+
+    return NextResponse.json(response, { status: 201 });
+  } catch (error) {
+    console.error("Erro ao adicionar resposta ao ticket:", error);
+    return NextResponse.json({ error: "Erro ao adicionar resposta ao ticket." }, { status: 500 });
   }
 }
