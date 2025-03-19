@@ -23,9 +23,10 @@ interface Ticket {
     id: string;
     email: string;
     company: string;
+    role: "USER" | "ADMIN"; // Adicione a propriedade role aqui
   };
   status?: string;
-  createdAt?: string; // Certifique-se de que o campo createdAt está presente
+  createdAt?: string;
   Responses: Response[];
 }
 
@@ -111,6 +112,19 @@ const TicketDetailPage = () => {
     return <div className="text-center">Ticket não encontrado</div>;
   }
 
+  const handleDeleteTicket = async () => {
+    if (confirm("Tem certeza de que deseja excluir este ticket?")) {
+      try {
+        await axios.delete(`/api/tickets/${ticket?.id}`);
+        alert("Ticket excluído com sucesso!");
+        router.push("/tickets"); // Redireciona para a lista de tickets
+      } catch (error) {
+        console.error("Erro ao excluir o ticket:", error);
+        alert("Erro ao excluir o ticket.");
+      }
+    }
+  };
+
   return (
     <div>
       <Header />
@@ -149,9 +163,7 @@ const TicketDetailPage = () => {
                   className={`px-2 py-0.5 text-xs rounded-full ${getPriorityClass(
                     ticket.priority
                   )}`}
-                >
-                  {ticket.priority}
-                </span>
+                ></span>
                 <span className="px-2 py-0.5 text-xs rounded-full bg-green-100 text-green-800">
                   {ticket.department}
                 </span>
@@ -163,6 +175,11 @@ const TicketDetailPage = () => {
                       : "Data não disponível"}
                   </p>
                 </div>
+                {ticket.User.role === "ADMIN" && (
+                  <span className="px-2 py-0.5 text-xs rounded-full bg-red-600 text-white hover:bg-red-700 font-medium">
+                    <button onClick={handleDeleteTicket}>Excluir Ticket</button>
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -226,12 +243,10 @@ const TicketDetailPage = () => {
                     <p className="font-semibold">
                       {ticket.User.email.split("@")[0]} / Technical Support
                     </p>
-                    <p>
-                      Suporte Técnico / Tech Support: {ticket.User.email}
-                    </p>
+                    <p>Suporte Técnico / Tech Support: {ticket.User.email}</p>
                     <p className="text-xs text-gray-500">
-                      Web • Facebook • Twitter • Mastodon • YouTube • LinkedIn
-                      • Instagram
+                      Web • Facebook • Twitter • Mastodon • YouTube • LinkedIn •
+                      Instagram
                     </p>
                     <p className="text-xs font-semibold text-orange-600">
                       Datacenter, Cloud & Webhosting Business Solutions
