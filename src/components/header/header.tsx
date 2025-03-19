@@ -2,7 +2,6 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import Logo from "../../../public/logo.png";
 import { usePathname, useRouter } from "next/navigation";
 
 export default function Header() {
@@ -30,7 +29,7 @@ export default function Header() {
           <div className="flex w-full items-center justify-between gap-12 py-4">
             {/* Logo */}
             <div>
-              <Image src={Logo} alt="Logo" className="h-16 w-auto" />
+              <Image src="/logo.png" alt="Logo" className="h-16 w-auto" />
             </div>
 
             {/* Navigation Links */}

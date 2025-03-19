@@ -18,7 +18,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { FormEvent, useCallback, useRef, useState } from "react";
-import Logo from "../../../public/logo.png";
 
 export function LoginForm() {
   // Router serve para fazer redirect de páginas
@@ -89,7 +88,7 @@ export function LoginForm() {
           <div className="mb-7 text-center">
             <Image
               className="w-250 h-300 mx-auto mb-20"
-              src={Logo}
+              src="/logo_branca.png"
               alt="Devenz Studio Logo"
               width={250}
               height={250}
