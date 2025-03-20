@@ -64,6 +64,7 @@ export async function POST(req: NextRequest) {
         priority,
         department,
         userId,
+        ticketNumber: Math.floor(Math.random() * 1000000).toString(), // Generate a random ticket number
       },
     });
 
